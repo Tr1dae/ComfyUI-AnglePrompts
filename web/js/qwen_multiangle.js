@@ -49,6 +49,10 @@ app.registerExtension({
                 this._viewerIframe = iframe;
                 this._viewerReady = false;
 
+                // Initialize default_prompts from widget
+                const defaultPromptsWidget = node.widgets.find(w => w.name === "default_prompts");
+                this._useDefaultPrompts = defaultPromptsWidget?.value || false;
+
                 // Message handler
                 const onMessage = (event) => {
                     if (event.source !== iframe.contentWindow) return;
@@ -56,6 +60,11 @@ app.registerExtension({
 
                     if (data.type === 'VIEWER_READY') {
                         this._viewerReady = true;
+                        // Send pending image if any
+                        if (this._pendingImageSend) {
+                            this._pendingImageSend();
+                            delete this._pendingImageSend;
+                        }
                         // Send initial values
                         const hWidget = node.widgets.find(w => w.name === "horizontal_angle");
                         const vWidget = node.widgets.find(w => w.name === "vertical_angle");
@@ -65,17 +74,20 @@ app.registerExtension({
                             type: "INIT",
                             horizontal: hWidget?.value || 0,
                             vertical: vWidget?.value || 0,
-                            zoom: zWidget?.value || 5.0
+                            zoom: zWidget?.value || 5.0,
+                            useDefaultPrompts: this._useDefaultPrompts || false
                         }, "*");
                     } else if (data.type === 'ANGLE_UPDATE') {
                         // Update node widgets from 3D view
                         const hWidget = node.widgets.find(w => w.name === "horizontal_angle");
                         const vWidget = node.widgets.find(w => w.name === "vertical_angle");
                         const zWidget = node.widgets.find(w => w.name === "zoom");
+                        const defaultPromptsWidget = node.widgets.find(w => w.name === "default_prompts");
 
                         if (hWidget) hWidget.value = data.horizontal;
                         if (vWidget) vWidget.value = data.vertical;
                         if (zWidget) zWidget.value = data.zoom;
+                        if (defaultPromptsWidget) defaultPromptsWidget.value = data.useDefaultPrompts || false;
 
                         // Mark graph as changed
                         app.graph.setDirtyCanvas(true, true);
@@ -124,12 +136,14 @@ app.registerExtension({
                     const hWidget = node.widgets.find(w => w.name === "horizontal_angle");
                     const vWidget = node.widgets.find(w => w.name === "vertical_angle");
                     const zWidget = node.widgets.find(w => w.name === "zoom");
+                    const defaultPromptsWidget = node.widgets.find(w => w.name === "default_prompts");
 
                     iframe.contentWindow.postMessage({
                         type: "SYNC_ANGLES",
                         horizontal: hWidget?.value || 0,
                         vertical: vWidget?.value || 0,
-                        zoom: zWidget?.value || 5.0
+                        zoom: zWidget?.value || 5.0,
+                        useDefaultPrompts: defaultPromptsWidget?.value || false
                     }, "*");
                 };
 
@@ -139,7 +153,10 @@ app.registerExtension({
                     if (origCallback) {
                         origCallback.apply(this, arguments);
                     }
-                    if (name === "horizontal_angle" || name === "vertical_angle" || name === "zoom") {
+                    if (name === "horizontal_angle" || name === "vertical_angle" || name === "zoom" || name === "default_prompts") {
+                        if (name === "default_prompts") {
+                            this._useDefaultPrompts = value;
+                        }
                         syncTo3DView();
                     }
                 };
@@ -164,19 +181,7 @@ app.registerExtension({
                         if (this._viewerReady) {
                             sendImage();
                         } else {
-                            const checkReady = setInterval(() => {
-                                if (this._viewerReady) {
-                                    clearInterval(checkReady);
-                                    sendImage();
-                                }
-                            }, 50);
-
-                            setTimeout(() => {
-                                clearInterval(checkReady);
-                                if (!this._viewerReady) {
-                                    sendImage();
-                                }
-                            }, 2000);
+                            this._pendingImageSend = sendImage;
                         }
                     }
                 };
@@ -189,6 +194,7 @@ app.registerExtension({
                     if (resizeTimeout) {
                         clearTimeout(resizeTimeout);
                     }
+                    delete this._pendingImageSend;
                     if (iframe._blobUrl) {
                         URL.revokeObjectURL(iframe._blobUrl);
                     }
