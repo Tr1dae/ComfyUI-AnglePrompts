@@ -33,6 +33,23 @@ export const VIEWER_HTML = `
             height: 100%;
         }
 
+        #prompt-preview {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            background: rgba(10, 10, 15, 0.9);
+            border: 1px solid rgba(233, 61, 130, 0.3);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 11px;
+            color: #E93D82;
+            backdrop-filter: blur(4px);
+            font-family: 'Consolas', 'Monaco', monospace;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
         #info-panel {
             position: absolute;
             bottom: 8px;
@@ -73,23 +90,12 @@ export const VIEWER_HTML = `
         .param-value.zoom {
             color: #FFB800;
         }
-
-        #help-text {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: rgba(10, 10, 15, 0.8);
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 10px;
-            color: #666;
-        }
     </style>
 </head>
 <body>
     <div id="container">
         <div id="threejs-container"></div>
-        <div id="help-text">Drag handles to adjust camera angle</div>
+        <div id="prompt-preview">front view, eye level, medium shot</div>
         <div id="info-panel">
             <div class="param-item">
                 <div class="param-label">Horizontal</div>
@@ -110,9 +116,9 @@ export const VIEWER_HTML = `
     <script>
         // State
         let state = {
-            azimuth: 0,       // horizontal_angle: 0-360
-            elevation: 0,     // vertical_angle: -30 to 90
-            distance: 5,      // zoom: 0-10
+            azimuth: 0,
+            elevation: 0,
+            distance: 5,
             imageUrl: null
         };
 
@@ -123,11 +129,63 @@ export const VIEWER_HTML = `
         const hValueEl = document.getElementById('h-value');
         const vValueEl = document.getElementById('v-value');
         const zValueEl = document.getElementById('z-value');
+        const promptPreviewEl = document.getElementById('prompt-preview');
+
+        function generatePromptPreview() {
+            const h_angle = state.azimuth % 360;
+            let h_direction;
+            if (h_angle < 22.5 || h_angle >= 337.5) {
+                h_direction = "front view";
+            } else if (h_angle < 67.5) {
+                h_direction = "front-right view";
+            } else if (h_angle < 112.5) {
+                h_direction = "right side view";
+            } else if (h_angle < 157.5) {
+                h_direction = "back-right view";
+            } else if (h_angle < 202.5) {
+                h_direction = "back view";
+            } else if (h_angle < 247.5) {
+                h_direction = "back-left view";
+            } else if (h_angle < 292.5) {
+                h_direction = "left side view";
+            } else {
+                h_direction = "front-left view";
+            }
+
+            let v_direction;
+            if (state.elevation < -15) {
+                v_direction = "low angle";
+            } else if (state.elevation < 15) {
+                v_direction = "eye level";
+            } else if (state.elevation < 45) {
+                v_direction = "high angle";
+            } else if (state.elevation < 75) {
+                v_direction = "bird's eye view";
+            } else {
+                v_direction = "top-down view";
+            }
+
+            let distance;
+            if (state.distance < 2) {
+                distance = "wide shot";
+            } else if (state.distance < 4) {
+                distance = "medium-wide shot";
+            } else if (state.distance < 6) {
+                distance = "medium shot";
+            } else if (state.distance < 8) {
+                distance = "medium close-up";
+            } else {
+                distance = "close-up";
+            }
+
+            return h_direction + ", " + v_direction + ", " + distance;
+        }
 
         function updateDisplay() {
             hValueEl.textContent = Math.round(state.azimuth) + '°';
             vValueEl.textContent = Math.round(state.elevation) + '°';
             zValueEl.textContent = state.distance.toFixed(1);
+            promptPreviewEl.textContent = generatePromptPreview();
         }
 
         function sendAngleUpdate() {
@@ -636,9 +694,6 @@ export const VIEWER_HTML = `
                 if (threeScene) {
                     threeScene.updateImage(data.imageUrl);
                 }
-            } else if (data.type === 'IMAGE_CONNECTED') {
-                // Show visual indicator that image is connected
-                // The actual image data will come through UPDATE_IMAGE
             }
         });
 
