@@ -27,7 +27,50 @@ A ComfyUI custom node for 3D camera angle control. Provides an interactive Three
 
 3. Restart ComfyUI
 
-4. download lora from https://huggingface.co/fal/Qwen-Image-Edit-2511-Multiple-Angles-LoRA/tree/main into your lora folder
+4. Download LoRA from https://huggingface.co/fal/Qwen-Image-Edit-2511-Multiple-Angles-LoRA/tree/main into your lora folder
+
+## Development
+
+This project uses TypeScript and Vite for building the frontend. The 3D viewport is built with Three.js.
+
+### Prerequisites
+
+- Node.js 18+
+- npm
+
+### Build
+
+```bash
+# Install dependencies
+npm install
+
+# Build for production
+npm run build
+
+# Build with watch mode (for development)
+npm run dev
+
+# Type check
+npm run typecheck
+```
+
+### Project Structure
+
+```
+ComfyUI-qwenmultiangle/
+├── src/
+│   ├── main.ts           # Extension entry point
+│   ├── CameraWidget.ts   # Three.js camera control widget
+│   ├── styles.ts         # CSS styles
+│   └── types.ts          # TypeScript type definitions
+├── js/                   # Build output (committed for distribution)
+│   └── main.js
+├── nodes.py              # ComfyUI node definition
+├── __init__.py           # Python module init
+├── package.json
+├── tsconfig.json
+└── vite.config.mts
+```
 
 ## Usage
 
