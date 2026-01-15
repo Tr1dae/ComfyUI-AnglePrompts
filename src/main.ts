@@ -39,10 +39,12 @@ function createCameraWidget(node: QwenMultiangleNode): { widget: DOMWidget } {
 
   // Create the camera widget after a small delay to ensure container is mounted
   setTimeout(() => {
+    const mode = node.constructor?.comfyClass === 'QwenMultiangleFacingNode' ? 'facing' : 'camera'
     const cameraWidget = new CameraWidget({
       node,
       container,
       initialState,
+      mode,
       onStateChange: (state: CameraState) => {
         // Update node widgets when state changes
         const hWidget = node.widgets?.find(w => w.name === 'horizontal_angle')
@@ -147,7 +149,8 @@ app.registerExtension({
   name: 'ComfyUI.QwenMultiangle',
 
   nodeCreated(node: QwenMultiangleNode) {
-    if (node.constructor?.comfyClass !== 'QwenMultiangleCameraNode') {
+    if (node.constructor?.comfyClass !== 'QwenMultiangleCameraNode' &&
+        node.constructor?.comfyClass !== 'QwenMultiangleFacingNode') {
       return
     }
 

@@ -32,6 +32,19 @@ export interface Translations {
   wideShot: string
   mediumShot: string
   closeUp: string
+  // Facing direction options
+  straightAhead: string
+  toTheRight: string
+  toTheLeft: string
+  backwardsToRight: string
+  backwardsToLeft: string
+  backwards: string
+  lookingDown: string
+  lookingStraight: string
+  lookingUp: string
+  farAway: string
+  normalDistance: string
+  closeby: string
 }
 
 const translations: Record<Locale, Translations> = {
@@ -63,7 +76,20 @@ const translations: Record<Locale, Translations> = {
     // Distance options
     wideShot: 'wide shot',
     mediumShot: 'medium shot',
-    closeUp: 'close-up'
+    closeUp: 'close-up',
+    // Facing direction options
+    straightAhead: 'straight ahead',
+    toTheRight: 'to the right',
+    toTheLeft: 'to the left',
+    backwardsToRight: 'backwards to the right',
+    backwardsToLeft: 'backwards to the left',
+    backwards: 'backwards',
+    lookingDown: 'looking down',
+    lookingStraight: 'looking straight',
+    lookingUp: 'looking up',
+    farAway: 'far away',
+    normalDistance: 'normal',
+    closeby: 'closeby'
   },
   zh: {
     // Dropdown labels
@@ -93,7 +119,20 @@ const translations: Record<Locale, Translations> = {
     // Distance options
     wideShot: '远景',
     mediumShot: '中景',
-    closeUp: '特写'
+    closeUp: '特写',
+    // Facing direction options
+    straightAhead: '直视前方',
+    toTheRight: '看向右侧',
+    toTheLeft: '看向左侧',
+    backwardsToRight: '向右后方看',
+    backwardsToLeft: '向左后方看',
+    backwards: '向后看',
+    lookingDown: '向下看',
+    lookingStraight: '平视',
+    lookingUp: '向上看',
+    farAway: '远处',
+    normalDistance: '正常距离',
+    closeby: '靠近'
   },
   ja: {
     // Dropdown labels
@@ -123,7 +162,20 @@ const translations: Record<Locale, Translations> = {
     // Distance options
     wideShot: 'ワイドショット',
     mediumShot: 'ミディアムショット',
-    closeUp: 'クローズアップ'
+    closeUp: 'クローズアップ',
+    // Facing direction options
+    straightAhead: 'まっすぐ前',
+    toTheRight: '右を見る',
+    toTheLeft: '左を見る',
+    backwardsToRight: '右後ろを見る',
+    backwardsToLeft: '左後ろを見る',
+    backwards: '後ろを見る',
+    lookingDown: '下を見る',
+    lookingStraight: 'まっすぐ見る',
+    lookingUp: '上を見る',
+    farAway: '遠く',
+    normalDistance: '普通',
+    closeby: '近く'
   },
   ko: {
     // Dropdown labels
@@ -153,7 +205,20 @@ const translations: Record<Locale, Translations> = {
     // Distance options
     wideShot: '와이드 샷',
     mediumShot: '미디엄 샷',
-    closeUp: '클로즈업'
+    closeUp: '클로즈업',
+    // Facing direction options
+    straightAhead: '직진',
+    toTheRight: '오른쪽 보기',
+    toTheLeft: '왼쪽 보기',
+    backwardsToRight: '오른쪽 뒤로 보기',
+    backwardsToLeft: '왼쪽 뒤로 보기',
+    backwards: '뒤로 보기',
+    lookingDown: '아래 보기',
+    lookingStraight: '직진 보기',
+    lookingUp: '위 보기',
+    farAway: '멀리',
+    normalDistance: '보통',
+    closeby: '가까이'
   }
 }
 

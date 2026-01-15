@@ -20285,7 +20285,20 @@ const translations = {
     // Distance options
     wideShot: "wide shot",
     mediumShot: "medium shot",
-    closeUp: "close-up"
+    closeUp: "close-up",
+    // Facing direction options
+    straightAhead: "straight ahead",
+    toTheRight: "to the right",
+    toTheLeft: "to the left",
+    backwardsToRight: "backwards to the right",
+    backwardsToLeft: "backwards to the left",
+    backwards: "backwards",
+    lookingDown: "looking down",
+    lookingStraight: "looking straight",
+    lookingUp: "looking up",
+    farAway: "far away",
+    normalDistance: "normal",
+    closeby: "closeby"
   },
   zh: {
     // Dropdown labels
@@ -20315,7 +20328,20 @@ const translations = {
     // Distance options
     wideShot: "远景",
     mediumShot: "中景",
-    closeUp: "特写"
+    closeUp: "特写",
+    // Facing direction options
+    straightAhead: "直视前方",
+    toTheRight: "看向右侧",
+    toTheLeft: "看向左侧",
+    backwardsToRight: "向右后方看",
+    backwardsToLeft: "向左后方看",
+    backwards: "向后看",
+    lookingDown: "向下看",
+    lookingStraight: "平视",
+    lookingUp: "向上看",
+    farAway: "远处",
+    normalDistance: "正常距离",
+    closeby: "靠近"
   },
   ja: {
     // Dropdown labels
@@ -20345,7 +20371,20 @@ const translations = {
     // Distance options
     wideShot: "ワイドショット",
     mediumShot: "ミディアムショット",
-    closeUp: "クローズアップ"
+    closeUp: "クローズアップ",
+    // Facing direction options
+    straightAhead: "まっすぐ前",
+    toTheRight: "右を見る",
+    toTheLeft: "左を見る",
+    backwardsToRight: "右後ろを見る",
+    backwardsToLeft: "左後ろを見る",
+    backwards: "後ろを見る",
+    lookingDown: "下を見る",
+    lookingStraight: "まっすぐ見る",
+    lookingUp: "上を見る",
+    farAway: "遠く",
+    normalDistance: "普通",
+    closeby: "近く"
   },
   ko: {
     // Dropdown labels
@@ -20375,7 +20414,20 @@ const translations = {
     // Distance options
     wideShot: "와이드 샷",
     mediumShot: "미디엄 샷",
-    closeUp: "클로즈업"
+    closeUp: "클로즈업",
+    // Facing direction options
+    straightAhead: "직진",
+    toTheRight: "오른쪽 보기",
+    toTheLeft: "왼쪽 보기",
+    backwardsToRight: "오른쪽 뒤로 보기",
+    backwardsToLeft: "왼쪽 뒤로 보기",
+    backwards: "뒤로 보기",
+    lookingDown: "아래 보기",
+    lookingStraight: "직진 보기",
+    lookingUp: "위 보기",
+    farAway: "멀리",
+    normalDistance: "보통",
+    closeby: "가까이"
   }
 };
 let currentLocale = "en";
@@ -20434,6 +20486,7 @@ class CameraWidget {
     __publicField(this, "container");
     __publicField(this, "state");
     __publicField(this, "onStateChange");
+    __publicField(this, "mode");
     // Three.js objects
     __publicField(this, "scene");
     __publicField(this, "camera");
@@ -20494,7 +20547,7 @@ class CameraWidget {
     __publicField(this, "elevationSelect");
     __publicField(this, "distanceSelect");
     // Dropdown options mapping (key is i18n key, promptKey is for output)
-    __publicField(this, "AZIMUTH_OPTIONS", [
+    __publicField(this, "CAMERA_AZIMUTH_OPTIONS", [
       { key: "frontView", promptKey: "front view", value: 0 },
       { key: "frontRightQuarterView", promptKey: "front-right quarter view", value: 45 },
       { key: "rightSideView", promptKey: "right side view", value: 90 },
@@ -20504,22 +20557,44 @@ class CameraWidget {
       { key: "leftSideView", promptKey: "left side view", value: 270 },
       { key: "frontLeftQuarterView", promptKey: "front-left quarter view", value: 315 }
     ]);
-    __publicField(this, "ELEVATION_OPTIONS", [
+    __publicField(this, "FACING_AZIMUTH_OPTIONS", [
+      { key: "straightAhead", promptKey: "straight ahead", value: 0 },
+      { key: "toTheRight", promptKey: "to the right", value: 45 },
+      { key: "toTheRight", promptKey: "to the right", value: 90 },
+      { key: "backwardsToRight", promptKey: "backwards to the right", value: 135 },
+      { key: "backwards", promptKey: "backwards", value: 180 },
+      { key: "backwardsToLeft", promptKey: "backwards to the left", value: 225 },
+      { key: "toTheLeft", promptKey: "to the left", value: 270 },
+      { key: "toTheLeft", promptKey: "to the left", value: 315 }
+    ]);
+    __publicField(this, "CAMERA_ELEVATION_OPTIONS", [
       { key: "lowAngleShot", promptKey: "low-angle shot", value: -30 },
       { key: "eyeLevelShot", promptKey: "eye-level shot", value: 0 },
       { key: "elevatedShot", promptKey: "elevated shot", value: 30 },
       { key: "highAngleShot", promptKey: "high-angle shot", value: 60 }
     ]);
-    __publicField(this, "DISTANCE_OPTIONS", [
+    __publicField(this, "FACING_ELEVATION_OPTIONS", [
+      { key: "lookingDown", promptKey: "down", value: -30 },
+      { key: "lookingStraight", promptKey: "straight", value: 0 },
+      { key: "lookingUp", promptKey: "up", value: 30 },
+      { key: "lookingUp", promptKey: "up", value: 60 }
+    ]);
+    __publicField(this, "CAMERA_DISTANCE_OPTIONS", [
       { key: "wideShot", promptKey: "wide shot", value: 1 },
       { key: "mediumShot", promptKey: "medium shot", value: 4 },
       { key: "closeUp", promptKey: "close-up", value: 8 }
+    ]);
+    __publicField(this, "FACING_DISTANCE_OPTIONS", [
+      { key: "farAway", promptKey: "far away", value: 1 },
+      { key: "normalDistance", promptKey: "normal", value: 4 },
+      { key: "closeby", promptKey: "closeby", value: 8 }
     ]);
     var _a, _b, _c, _d;
     initI18n();
     injectStyles();
     this.container = options.container;
     this.onStateChange = options.onStateChange;
+    this.mode = options.mode ?? "camera";
     this.state = {
       azimuth: ((_a = options.initialState) == null ? void 0 : _a.azimuth) ?? 0,
       elevation: ((_b = options.initialState) == null ? void 0 : _b.elevation) ?? 0,
@@ -20535,10 +20610,20 @@ class CameraWidget {
     this.updateDisplay();
     this.animate();
   }
+  // Get the appropriate dropdown options based on mode
+  get azimuthOptions() {
+    return this.mode === "facing" ? this.FACING_AZIMUTH_OPTIONS : this.CAMERA_AZIMUTH_OPTIONS;
+  }
+  get elevationOptions() {
+    return this.mode === "facing" ? this.FACING_ELEVATION_OPTIONS : this.CAMERA_ELEVATION_OPTIONS;
+  }
+  get distanceOptions() {
+    return this.mode === "facing" ? this.FACING_DISTANCE_OPTIONS : this.CAMERA_DISTANCE_OPTIONS;
+  }
   createDOM() {
-    const azimuthOptionsHtml = this.AZIMUTH_OPTIONS.map((opt) => `<option value="${opt.value}">${t(opt.key)}</option>`).join("");
-    const elevationOptionsHtml = this.ELEVATION_OPTIONS.map((opt) => `<option value="${opt.value}">${t(opt.key)}</option>`).join("");
-    const distanceOptionsHtml = this.DISTANCE_OPTIONS.map((opt) => `<option value="${opt.value}">${t(opt.key)}</option>`).join("");
+    const azimuthOptionsHtml = this.azimuthOptions.map((opt) => `<option value="${opt.value}">${t(opt.key)}</option>`).join("");
+    const elevationOptionsHtml = this.elevationOptions.map((opt) => `<option value="${opt.value}">${t(opt.key)}</option>`).join("");
+    const distanceOptionsHtml = this.distanceOptions.map((opt) => `<option value="${opt.value}">${t(opt.key)}</option>`).join("");
     this.container.innerHTML = `
       <div class="qwen-multiangle-container">
         <div class="qwen-multiangle-canvas"></div>
@@ -21037,6 +21122,13 @@ class CameraWidget {
     this.renderer.render(this.scene, this.activeCamera);
   }
   generatePrompt() {
+    if (this.mode === "facing") {
+      return this.generateFacingPrompt();
+    } else {
+      return this.generateCameraPrompt();
+    }
+  }
+  generateCameraPrompt() {
     const hAngle = this.state.azimuth % 360;
     let hDirection;
     if (hAngle < 22.5 || hAngle >= 337.5) {
@@ -21076,6 +21168,65 @@ class CameraWidget {
     }
     return `<sks> ${hDirection} ${vDirection} ${distance}`;
   }
+  generateFacingPrompt() {
+    const hAngle = this.state.azimuth % 360;
+    let hDirection;
+    if (hAngle < 22.5 || hAngle >= 337.5) {
+      hDirection = "";
+    } else if (hAngle < 67.5) {
+      hDirection = "to the right";
+    } else if (hAngle < 112.5) {
+      hDirection = "to the right";
+    } else if (hAngle < 157.5) {
+      hDirection = "backwards to the right";
+    } else if (hAngle < 202.5) {
+      hDirection = "backwards";
+    } else if (hAngle < 247.5) {
+      hDirection = "backwards to the left";
+    } else if (hAngle < 292.5) {
+      hDirection = "to the left";
+    } else {
+      hDirection = "to the left";
+    }
+    let vDirection;
+    if (this.state.elevation < -15) {
+      vDirection = "down";
+    } else if (this.state.elevation < 15) {
+      vDirection = "";
+    } else {
+      vDirection = "up";
+    }
+    let distance;
+    if (this.state.distance < 2) {
+      distance = "far away";
+    } else if (this.state.distance < 6) {
+      distance = "";
+    } else {
+      distance = "closeby";
+    }
+    const gazeParts = ["they are looking"];
+    if (vDirection) {
+      gazeParts.push(vDirection);
+    }
+    if (hDirection) {
+      if (vDirection) {
+        gazeParts.push("and");
+      }
+      gazeParts.push(hDirection);
+    }
+    if (distance) {
+      gazeParts.push(distance);
+    }
+    if (!vDirection && !hDirection) {
+      if (distance) {
+        return `<sks> they are looking straight ahead ${distance}`;
+      } else {
+        return `<sks> they are looking straight ahead`;
+      }
+    } else {
+      return `<sks> ${gazeParts.join(" ")}`;
+    }
+  }
   updateDisplay() {
     this.hValueEl.textContent = `${Math.round(this.state.azimuth)}°`;
     this.vValueEl.textContent = `${Math.round(this.state.elevation)}°`;
@@ -21084,9 +21235,9 @@ class CameraWidget {
     this.syncDropdowns();
   }
   syncDropdowns() {
-    const azimuthValue = this.findClosestOption(this.state.azimuth, this.AZIMUTH_OPTIONS, true);
+    const azimuthValue = this.findClosestOption(this.state.azimuth, this.azimuthOptions, true);
     this.azimuthSelect.value = azimuthValue.toString();
-    const elevationValue = this.findClosestOption(this.state.elevation, this.ELEVATION_OPTIONS, false);
+    const elevationValue = this.findClosestOption(this.state.elevation, this.elevationOptions, false);
     this.elevationSelect.value = elevationValue.toString();
     const distanceValue = this.findClosestDistanceOption(this.state.distance);
     this.distanceSelect.value = distanceValue.toString();
@@ -21286,15 +21437,17 @@ function createCameraWidget(node) {
     }
   );
   setTimeout(() => {
-    var _a;
+    var _a, _b;
+    const mode = ((_a = node.constructor) == null ? void 0 : _a.comfyClass) === "QwenMultiangleFacingNode" ? "facing" : "camera";
     const cameraWidget = new CameraWidget({
       node,
       container,
       initialState,
+      mode,
       onStateChange: (state) => {
-        var _a2, _b, _c, _d;
+        var _a2, _b2, _c, _d;
         const hWidget = (_a2 = node.widgets) == null ? void 0 : _a2.find((w) => w.name === "horizontal_angle");
-        const vWidget = (_b = node.widgets) == null ? void 0 : _b.find((w) => w.name === "vertical_angle");
+        const vWidget = (_b2 = node.widgets) == null ? void 0 : _b2.find((w) => w.name === "vertical_angle");
         const zWidget = (_c = node.widgets) == null ? void 0 : _c.find((w) => w.name === "zoom");
         if (hWidget) {
           hWidget.value = state.azimuth;
@@ -21334,7 +21487,7 @@ function createCameraWidget(node) {
     setupWidgetSync("vertical_angle", cameraWidget);
     setupWidgetSync("zoom", cameraWidget);
     setupWidgetSync("camera_view", cameraWidget);
-    const cameraViewWidget = (_a = node.widgets) == null ? void 0 : _a.find((w) => w.name === "camera_view");
+    const cameraViewWidget = (_b = node.widgets) == null ? void 0 : _b.find((w) => w.name === "camera_view");
     if (cameraViewWidget && Boolean(cameraViewWidget.value)) {
       cameraWidget.setCameraView(true);
     }
@@ -21368,8 +21521,8 @@ function setupImageInput(node) {
 app.registerExtension({
   name: "ComfyUI.QwenMultiangle",
   nodeCreated(node) {
-    var _a;
-    if (((_a = node.constructor) == null ? void 0 : _a.comfyClass) !== "QwenMultiangleCameraNode") {
+    var _a, _b;
+    if (((_a = node.constructor) == null ? void 0 : _a.comfyClass) !== "QwenMultiangleCameraNode" && ((_b = node.constructor) == null ? void 0 : _b.comfyClass) !== "QwenMultiangleFacingNode") {
       return;
     }
     const [oldWidth, oldHeight] = node.size;

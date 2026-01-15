@@ -13,6 +13,7 @@ export class CameraWidget {
   private container: HTMLElement
   private state: CameraState
   private onStateChange?: (state: CameraState) => void
+  private mode: 'camera' | 'facing'
 
   // Three.js objects
   private scene!: THREE.Scene
@@ -84,7 +85,7 @@ export class CameraWidget {
   private distanceSelect!: HTMLSelectElement
 
   // Dropdown options mapping (key is i18n key, promptKey is for output)
-  private readonly AZIMUTH_OPTIONS: DropdownOption[] = [
+  private readonly CAMERA_AZIMUTH_OPTIONS: DropdownOption[] = [
     { key: 'frontView', promptKey: 'front view', value: 0 },
     { key: 'frontRightQuarterView', promptKey: 'front-right quarter view', value: 45 },
     { key: 'rightSideView', promptKey: 'right side view', value: 90 },
@@ -95,18 +96,55 @@ export class CameraWidget {
     { key: 'frontLeftQuarterView', promptKey: 'front-left quarter view', value: 315 }
   ]
 
-  private readonly ELEVATION_OPTIONS: DropdownOption[] = [
+  private readonly FACING_AZIMUTH_OPTIONS: DropdownOption[] = [
+    { key: 'straightAhead', promptKey: 'straight ahead', value: 0 },
+    { key: 'toTheRight', promptKey: 'to the right', value: 45 },
+    { key: 'toTheRight', promptKey: 'to the right', value: 90 },
+    { key: 'backwardsToRight', promptKey: 'backwards to the right', value: 135 },
+    { key: 'backwards', promptKey: 'backwards', value: 180 },
+    { key: 'backwardsToLeft', promptKey: 'backwards to the left', value: 225 },
+    { key: 'toTheLeft', promptKey: 'to the left', value: 270 },
+    { key: 'toTheLeft', promptKey: 'to the left', value: 315 }
+  ]
+
+  private readonly CAMERA_ELEVATION_OPTIONS: DropdownOption[] = [
     { key: 'lowAngleShot', promptKey: 'low-angle shot', value: -30 },
     { key: 'eyeLevelShot', promptKey: 'eye-level shot', value: 0 },
     { key: 'elevatedShot', promptKey: 'elevated shot', value: 30 },
     { key: 'highAngleShot', promptKey: 'high-angle shot', value: 60 }
   ]
 
-  private readonly DISTANCE_OPTIONS: DropdownOption[] = [
+  private readonly FACING_ELEVATION_OPTIONS: DropdownOption[] = [
+    { key: 'lookingDown', promptKey: 'down', value: -30 },
+    { key: 'lookingStraight', promptKey: 'straight', value: 0 },
+    { key: 'lookingUp', promptKey: 'up', value: 30 },
+    { key: 'lookingUp', promptKey: 'up', value: 60 }
+  ]
+
+  private readonly CAMERA_DISTANCE_OPTIONS: DropdownOption[] = [
     { key: 'wideShot', promptKey: 'wide shot', value: 1 },
     { key: 'mediumShot', promptKey: 'medium shot', value: 4 },
     { key: 'closeUp', promptKey: 'close-up', value: 8 }
   ]
+
+  private readonly FACING_DISTANCE_OPTIONS: DropdownOption[] = [
+    { key: 'farAway', promptKey: 'far away', value: 1 },
+    { key: 'normalDistance', promptKey: 'normal', value: 4 },
+    { key: 'closeby', promptKey: 'closeby', value: 8 }
+  ]
+
+  // Get the appropriate dropdown options based on mode
+  private get azimuthOptions(): DropdownOption[] {
+    return this.mode === 'facing' ? this.FACING_AZIMUTH_OPTIONS : this.CAMERA_AZIMUTH_OPTIONS
+  }
+
+  private get elevationOptions(): DropdownOption[] {
+    return this.mode === 'facing' ? this.FACING_ELEVATION_OPTIONS : this.CAMERA_ELEVATION_OPTIONS
+  }
+
+  private get distanceOptions(): DropdownOption[] {
+    return this.mode === 'facing' ? this.FACING_DISTANCE_OPTIONS : this.CAMERA_DISTANCE_OPTIONS
+  }
 
   constructor(options: CameraWidgetOptions) {
     initI18n()
@@ -114,6 +152,7 @@ export class CameraWidget {
 
     this.container = options.container
     this.onStateChange = options.onStateChange
+    this.mode = options.mode ?? 'camera'
     this.state = {
       azimuth: options.initialState?.azimuth ?? 0,
       elevation: options.initialState?.elevation ?? 0,
@@ -134,13 +173,13 @@ export class CameraWidget {
 
   private createDOM(): void {
     // Generate dropdown options HTML with translations
-    const azimuthOptionsHtml = this.AZIMUTH_OPTIONS
+    const azimuthOptionsHtml = this.azimuthOptions
       .map(opt => `<option value="${opt.value}">${t(opt.key)}</option>`)
       .join('')
-    const elevationOptionsHtml = this.ELEVATION_OPTIONS
+    const elevationOptionsHtml = this.elevationOptions
       .map(opt => `<option value="${opt.value}">${t(opt.key)}</option>`)
       .join('')
-    const distanceOptionsHtml = this.DISTANCE_OPTIONS
+    const distanceOptionsHtml = this.distanceOptions
       .map(opt => `<option value="${opt.value}">${t(opt.key)}</option>`)
       .join('')
 
@@ -751,6 +790,14 @@ export class CameraWidget {
   }
 
   private generatePrompt(): string {
+    if (this.mode === 'facing') {
+      return this.generateFacingPrompt()
+    } else {
+      return this.generateCameraPrompt()
+    }
+  }
+
+  private generateCameraPrompt(): string {
     const hAngle = this.state.azimuth % 360
 
     // Azimuth
@@ -798,6 +845,76 @@ export class CameraWidget {
     return `<sks> ${hDirection} ${vDirection} ${distance}`
   }
 
+  private generateFacingPrompt(): string {
+    const hAngle = this.state.azimuth % 360
+
+    // Horizontal gaze direction - 8 directions
+    let hDirection: string
+    if (hAngle < 22.5 || hAngle >= 337.5) {
+      hDirection = ""
+    } else if (hAngle < 67.5) {
+      hDirection = "to the right"
+    } else if (hAngle < 112.5) {
+      hDirection = "to the right"
+    } else if (hAngle < 157.5) {
+      hDirection = "backwards to the right"
+    } else if (hAngle < 202.5) {
+      hDirection = "backwards"
+    } else if (hAngle < 247.5) {
+      hDirection = "backwards to the left"
+    } else if (hAngle < 292.5) {
+      hDirection = "to the left"
+    } else {
+      hDirection = "to the left"
+    }
+
+    // Vertical gaze direction - 4 levels
+    let vDirection: string
+    if (this.state.elevation < -15) {
+      vDirection = "down"
+    } else if (this.state.elevation < 15) {
+      vDirection = ""
+    } else {
+      vDirection = "up"
+    }
+
+    // Distance - 3 levels
+    let distance: string
+    if (this.state.distance < 2) {
+      distance = "far away"
+    } else if (this.state.distance < 6) {
+      distance = ""
+    } else {
+      distance = "closeby"
+    }
+
+    // Build gaze direction prompt
+    const gazeParts = ["they are looking"]
+    if (vDirection) {
+      gazeParts.push(vDirection)
+    }
+    if (hDirection) {
+      if (vDirection) {
+        gazeParts.push("and")
+      }
+      gazeParts.push(hDirection)
+    }
+    if (distance) {
+      gazeParts.push(distance)
+    }
+
+    // Handle special case of straight ahead with no modifiers
+    if (!vDirection && !hDirection) {
+      if (distance) {
+        return `<sks> they are looking straight ahead ${distance}`
+      } else {
+        return `<sks> they are looking straight ahead`
+      }
+    } else {
+      return `<sks> ${gazeParts.join(' ')}`
+    }
+  }
+
   private updateDisplay(): void {
     this.hValueEl.textContent = `${Math.round(this.state.azimuth)}°`
     this.vValueEl.textContent = `${Math.round(this.state.elevation)}°`
@@ -808,11 +925,11 @@ export class CameraWidget {
 
   private syncDropdowns(): void {
     // Find closest azimuth option
-    const azimuthValue = this.findClosestOption(this.state.azimuth, this.AZIMUTH_OPTIONS, true)
+    const azimuthValue = this.findClosestOption(this.state.azimuth, this.azimuthOptions, true)
     this.azimuthSelect.value = azimuthValue.toString()
 
     // Find closest elevation option
-    const elevationValue = this.findClosestOption(this.state.elevation, this.ELEVATION_OPTIONS, false)
+    const elevationValue = this.findClosestOption(this.state.elevation, this.elevationOptions, false)
     this.elevationSelect.value = elevationValue.toString()
 
     // Find closest distance option
@@ -845,9 +962,9 @@ export class CameraWidget {
 
   private findClosestDistanceOption(distance: number): number {
     // Map distance ranges to options based on prompt thresholds
-    // < 2 → wide shot (value 1)
-    // 2-6 → medium shot (value 4)
-    // >= 6 → close-up (value 8)
+    // < 2 → far (value 1)
+    // 2-6 → medium (value 4)
+    // >= 6 → close (value 8)
     if (distance < 2) {
       return 1
     } else if (distance < 6) {
