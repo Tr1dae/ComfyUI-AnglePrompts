@@ -1,9 +1,7 @@
-# ComfyUI-qwenmultiangle
-
-**Language / 语言 / 言語 / 언어:** [English](README.md) | [中文](README_zh.md) | [日本語](README_ja.md) | [한국어](README_ko.md)
+# ComfyUI-AnglePrompts
 
 A ComfyUI custom node suite for 3D camera angle and gaze direction control. Provides interactive Three.js viewports to adjust camera angles or subject gaze directions and outputs formatted prompt strings for multi-angle image generation.
-![img.png](img.png)
+![Angle_Preview.jpg](Angle_Preview.jpg)
 ## Features
 
 - **Two Interactive 3D Control Nodes**:
